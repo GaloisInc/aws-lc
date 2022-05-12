@@ -229,6 +229,7 @@ void CRYPTO_gcm128_init_key(GCM128_KEY *gcm_key, const AES_KEY *aes_key,
 
 void CRYPTO_gcm128_setiv(GCM128_CONTEXT *ctx, const AES_KEY *key,
                          const uint8_t *iv, size_t len) {
+  block128_f block = ctx->gcm_key.block;
 #ifdef GCM_FUNCREF
   void (*gcm_gmult_p)(uint64_t Xi[2], const u128 Htable[16]) =
       ctx->gcm_key.gmult;
@@ -272,7 +273,7 @@ void CRYPTO_gcm128_setiv(GCM128_CONTEXT *ctx, const AES_KEY *key,
     ctr = CRYPTO_bswap4(ctx->Yi.d[3]);
   }
 
-  (*ctx->gcm_key.block)(ctx->Yi.c, ctx->EK0.c, key);
+  (*block)(ctx->Yi.c, ctx->EK0.c, key);
   ++ctr;
   ctx->Yi.d[3] = CRYPTO_bswap4(ctr);
 }
@@ -516,6 +517,7 @@ int CRYPTO_gcm128_decrypt(GCM128_CONTEXT *ctx, const AES_KEY *key,
 int CRYPTO_gcm128_encrypt_ctr32(GCM128_CONTEXT *ctx, const AES_KEY *key,
                                 const uint8_t *in, uint8_t *out, size_t len,
                                 ctr128_f stream) {
+  block128_f block = ctx->gcm_key.block;
 #ifdef GCM_FUNCREF
   void (*gcm_gmult_p)(uint64_t Xi[2], const u128 Htable[16]) =
       ctx->gcm_key.gmult;
@@ -586,7 +588,7 @@ int CRYPTO_gcm128_encrypt_ctr32(GCM128_CONTEXT *ctx, const AES_KEY *key,
     out += len_blocks;
   }
   if (len) {
-    (*ctx->gcm_key.block)(ctx->Yi.c, ctx->EKi.c, key);
+    (*block)(ctx->Yi.c, ctx->EKi.c, key);
     ++ctr;
     ctx->Yi.d[3] = CRYPTO_bswap4(ctr);
     while (len--) {
@@ -602,6 +604,7 @@ int CRYPTO_gcm128_encrypt_ctr32(GCM128_CONTEXT *ctx, const AES_KEY *key,
 int CRYPTO_gcm128_decrypt_ctr32(GCM128_CONTEXT *ctx, const AES_KEY *key,
                                 const uint8_t *in, uint8_t *out, size_t len,
                                 ctr128_f stream) {
+  block128_f block = ctx->gcm_key.block;
 #ifdef GCM_FUNCREF
   void (*gcm_gmult_p)(uint64_t Xi[2], const u128 Htable[16]) =
       ctx->gcm_key.gmult;
@@ -674,7 +677,7 @@ int CRYPTO_gcm128_decrypt_ctr32(GCM128_CONTEXT *ctx, const AES_KEY *key,
     len -= len_blocks;
   }
   if (len) {
-    (*ctx->gcm_key.block)(ctx->Yi.c, ctx->EKi.c, key);
+    (*block)(ctx->Yi.c, ctx->EKi.c, key);
     ++ctr;
     ctx->Yi.d[3] = CRYPTO_bswap4(ctr);
     while (len--) {
